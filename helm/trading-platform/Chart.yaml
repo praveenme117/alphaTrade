@@ -1,0 +1,13 @@
+apiVersion: v2
+name: trading-platform
+description: Groww/Zerodha-inspired mock crypto & stock trading platform
+type: application
+version: 1.0.0
+appVersion: "1.0.0-SNAPSHOT"
+keywords:
+  - trading
+  - kafka
+  - springboot
+  - microservices
+maintainers:
+  - name: Trading Platform Team

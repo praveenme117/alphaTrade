@@ -67,11 +67,11 @@ public class PaymentController {
      */
     @Operation(summary = "Payment gateway webhook (signature-verified in production)")
     @PostMapping("/webhook/{gateway}")
-    public ResponseEntity<ApiResponse<Void>> webhook(
+    public ResponseEntity<ApiResponse<?>> webhook(
             @PathVariable String gateway,
             @RequestBody String payload,
             @RequestHeader(value = "X-Signature", required = false) String signature) {
         // Mock: just log — real implementation verifies HMAC signature from gateway
-        return ResponseEntity.ok(ApiResponse.ok(null, "Webhook received"));
+        return ResponseEntity.ok(ApiResponse.noContent("Webhook received"));
     }
 }

@@ -11,6 +11,12 @@ import java.time.Instant;
 /**
  * Unified API response wrapper used across all microservices.
  *
+ * Factory methods (unambiguous):
+ *   ok(data)               — data only
+ *   ok(data, message)      — with message  [NOTE: data is first, always typed]
+ *   noContent(message)     — success with message, no data (replaces ok(null,"msg"))
+ *   error(message, code)   — failure
+ *
  * @param <T> the data payload type
  */
 @Data
@@ -28,6 +34,7 @@ public class ApiResponse<T> {
     @Builder.Default
     private Instant timestamp = Instant.now();
 
+    /** Success with data only */
     public static <T> ApiResponse<T> ok(T data) {
         return ApiResponse.<T>builder()
                 .success(true)
@@ -35,7 +42,8 @@ public class ApiResponse<T> {
                 .build();
     }
 
-    public static <T> ApiResponse<T> ok(String message, T data) {
+    /** Success with data + message */
+    public static <T> ApiResponse<T> ok(T data, String message) {
         return ApiResponse.<T>builder()
                 .success(true)
                 .message(message)
@@ -43,6 +51,15 @@ public class ApiResponse<T> {
                 .build();
     }
 
+    /** Success with message, no data (for void operations: cancel, mark-read, etc.) */
+    public static ApiResponse<Void> noContent(String message) {
+        return ApiResponse.<Void>builder()
+                .success(true)
+                .message(message)
+                .build();
+    }
+
+    /** Failure */
     public static <T> ApiResponse<T> error(String message, String errorCode) {
         return ApiResponse.<T>builder()
                 .success(false)

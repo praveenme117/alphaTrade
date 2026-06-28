@@ -1,0 +1,83 @@
+# ─── Global values ────────────────────────────────────────────
+global:
+  registry: ghcr.io/your-org/trading-platform
+  imageTag: latest
+  imagePullSecret: ghcr-secret
+
+# ─── Services toggle (enable/disable individual deployments) ──
+services:
+  apiGateway:
+    enabled: true
+    port: 8080
+    replicas: 1
+  authService:
+    enabled: true
+    port: 8081
+    replicas: 1
+  marketService:
+    enabled: true
+    port: 8082
+    replicas: 1
+  orderService:
+    enabled: true
+    port: 8083
+    replicas: 1
+  portfolioService:
+    enabled: true
+    port: 8084
+    replicas: 1
+  walletService:
+    enabled: true
+    port: 8085
+    replicas: 1
+  paymentService:
+    enabled: true
+    port: 8086
+    replicas: 1
+  notificationService:
+    enabled: true
+    port: 8087
+    replicas: 1
+
+# ─── JWT config ───────────────────────────────────────────────
+jwt:
+  secret: "change-me-in-production-32-chars-min"
+
+# ─── Infrastructure refs ──────────────────────────────────────
+kafka:
+  bootstrapServers: "trading-kafka:9092"
+
+redis:
+  host: "trading-redis-master"
+  port: 6379
+
+# ─── Database config (external managed DB in production) ──────
+databases:
+  auth:     "jdbc:postgresql://postgres-auth:5432/auth_db"
+  market:   "jdbc:postgresql://postgres-market:5432/market_db"
+  order:    "jdbc:postgresql://postgres-order:5432/order_db"
+  portfolio:"jdbc:postgresql://postgres-portfolio:5432/portfolio_db"
+  wallet:   "jdbc:postgresql://postgres-wallet:5432/wallet_db"
+  payment:  "jdbc:postgresql://postgres-payment:5432/payment_db"
+  notification: "jdbc:postgresql://postgres-notification:5432/notification_db"
+
+dbUsername: "trading"
+dbPassword: "trading_secret"   # Override with secret in production
+
+# ─── Resource limits (conservative for free tier k3s) ─────────
+resources:
+  requests:
+    cpu: "100m"
+    memory: "256Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+
+# ─── Ingress (disabled by default — enable with cert-manager) ─
+ingress:
+  enabled: false
+  className: "nginx"
+  host: "api.trading.local"
+  tls:
+    enabled: false
+    secretName: "trading-tls"

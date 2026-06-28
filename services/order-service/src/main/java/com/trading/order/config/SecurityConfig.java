@@ -1,4 +1,4 @@
-package com.trading.service.config;
+package com.trading.order.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,8 +18,7 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/health", "/v3/api-docs/**",
-                                         "/swagger-ui/**", "/swagger-ui.html",
-                                         "/api/v1/payments/webhook/**").permitAll()
+                                         "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .anyRequest().permitAll())
                 .build();
     }

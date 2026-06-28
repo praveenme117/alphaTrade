@@ -41,18 +41,18 @@ public class NotificationController {
 
     @Operation(summary = "Mark a single notification as read")
     @PatchMapping("/{id}/read")
-    public ResponseEntity<ApiResponse<Void>> markRead(
+    public ResponseEntity<ApiResponse<?>> markRead(
             @RequestHeader("X-User-Id") String userId,
             @PathVariable UUID id) {
         notificationService.markRead(UUID.fromString(userId), id);
-        return ResponseEntity.ok(ApiResponse.ok(null, "Marked as read"));
+        return ResponseEntity.ok(ApiResponse.noContent("Marked as read"));
     }
 
     @Operation(summary = "Mark all notifications as read")
     @PatchMapping("/read-all")
-    public ResponseEntity<ApiResponse<Void>> markAllRead(
+    public ResponseEntity<ApiResponse<?>> markAllRead(
             @RequestHeader("X-User-Id") String userId) {
         notificationService.markAllRead(UUID.fromString(userId));
-        return ResponseEntity.ok(ApiResponse.ok(null, "All notifications marked as read"));
+        return ResponseEntity.ok(ApiResponse.noContent("All notifications marked as read"));
     }
 }

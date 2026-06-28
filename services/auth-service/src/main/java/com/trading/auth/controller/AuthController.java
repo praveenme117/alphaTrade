@@ -35,7 +35,7 @@ public class AuthController {
             @Valid @RequestBody RegisterRequest request) {
         AuthResponse response = authService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.ok("User registered successfully", response));
+                .body(ApiResponse.ok(response, "User registered successfully"));
     }
 
     @Operation(summary = "Login with email and password")
@@ -47,19 +47,15 @@ public class AuthController {
     public ResponseEntity<ApiResponse<AuthResponse>> login(
             @Valid @RequestBody LoginRequest request) {
         AuthResponse response = authService.login(request);
-        return ResponseEntity.ok(ApiResponse.ok("Login successful", response));
+        return ResponseEntity.ok(ApiResponse.ok(response, "Login successful"));
     }
 
     @Operation(summary = "Refresh access token using refresh token")
-    @ApiResponses({
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Token refreshed"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Invalid or expired refresh token")
-    })
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<AuthResponse>> refresh(
             @Valid @RequestBody RefreshTokenRequest request) {
         AuthResponse response = authService.refreshToken(request.getRefreshToken());
-        return ResponseEntity.ok(ApiResponse.ok("Token refreshed", response));
+        return ResponseEntity.ok(ApiResponse.ok(response, "Token refreshed"));
     }
 
     @Operation(summary = "Logout — revoke all refresh tokens",
@@ -68,7 +64,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Void>> logout(
             @AuthenticationPrincipal String userId) {
         authService.logout(UUID.fromString(userId));
-        return ResponseEntity.ok(ApiResponse.ok("Logged out successfully", null));
+        return ResponseEntity.ok(ApiResponse.noContent("Logged out successfully"));
     }
 
     @Operation(summary = "Get current user profile",
