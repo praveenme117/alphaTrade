@@ -1,0 +1,373 @@
+version: '3.9'
+
+# ─────────────────────────────────────────────────────────────────
+# Trading Platform — Full Local Development Stack
+# All services + infrastructure (100% free, runs locally)
+# ─────────────────────────────────────────────────────────────────
+# Start:  docker compose up -d
+# Stop:   docker compose down
+# Logs:   docker compose logs -f <service-name>
+# Reset:  docker compose down -v  (removes all volumes/data)
+# ─────────────────────────────────────────────────────────────────
+
+services:
+
+  # ───────── DATABASES (one per microservice) ────────────────────
+
+  postgres-auth:
+    image: postgres:16-alpine
+    container_name: trading-postgres-auth
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: trading
+      POSTGRES_PASSWORD: trading_secret
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_auth_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trading -d auth_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-market:
+    image: postgres:16-alpine
+    container_name: trading-postgres-market
+    environment:
+      POSTGRES_DB: market_db
+      POSTGRES_USER: trading
+      POSTGRES_PASSWORD: trading_secret
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_market_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trading -d market_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-order:
+    image: postgres:16-alpine
+    container_name: trading-postgres-order
+    environment:
+      POSTGRES_DB: order_db
+      POSTGRES_USER: trading
+      POSTGRES_PASSWORD: trading_secret
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_order_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trading -d order_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-portfolio:
+    image: postgres:16-alpine
+    container_name: trading-postgres-portfolio
+    environment:
+      POSTGRES_DB: portfolio_db
+      POSTGRES_USER: trading
+      POSTGRES_PASSWORD: trading_secret
+    ports:
+      - "5436:5432"
+    volumes:
+      - postgres_portfolio_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trading -d portfolio_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-wallet:
+    image: postgres:16-alpine
+    container_name: trading-postgres-wallet
+    environment:
+      POSTGRES_DB: wallet_db
+      POSTGRES_USER: trading
+      POSTGRES_PASSWORD: trading_secret
+    ports:
+      - "5437:5432"
+    volumes:
+      - postgres_wallet_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trading -d wallet_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-payment:
+    image: postgres:16-alpine
+    container_name: trading-postgres-payment
+    environment:
+      POSTGRES_DB: payment_db
+      POSTGRES_USER: trading
+      POSTGRES_PASSWORD: trading_secret
+    ports:
+      - "5438:5432"
+    volumes:
+      - postgres_payment_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trading -d payment_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ───────── REDIS ───────────────────────────────────────────────
+
+  redis:
+    image: redis:7-alpine
+    container_name: trading-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --save 60 1 --loglevel warning
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ───────── KAFKA + ZOOKEEPER ────────────────────────────────────
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.1
+    container_name: trading-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_log:/var/lib/zookeeper/log
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: trading-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_HOURS: 168
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  # ───────── DEV TOOLS (UI dashboards) ───────────────────────────
+
+  kafka-ui:
+    image: ghcr.io/kafbat/kafka-ui:latest
+    container_name: trading-kafka-ui
+    depends_on:
+      - kafka
+    ports:
+      - "9000:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      DYNAMIC_CONFIG_ENABLED: "true"
+
+  redis-insight:
+    image: redis/redisinsight:latest
+    container_name: trading-redis-insight
+    ports:
+      - "5540:5540"
+    volumes:
+      - redis_insight_data:/data
+
+  # ───────── MICROSERVICES ────────────────────────────────────────
+  # Uncomment services as you build them (Phase by Phase)
+  # Comment them out during early development to start them from IDE
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: services/api-gateway/Dockerfile
+    container_name: trading-api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATA_REDIS_HOST: redis
+      AUTH_SERVICE_URL: http://auth-service:8081
+      MARKET_SERVICE_URL: http://market-service:8082
+      ORDER_SERVICE_URL: http://order-service:8083
+      PORTFOLIO_SERVICE_URL: http://portfolio-service:8084
+      WALLET_SERVICE_URL: http://wallet-service:8085
+      PAYMENT_SERVICE_URL: http://payment-service:8086
+    depends_on:
+      redis:
+        condition: service_healthy
+    profiles: ["full"]   # only starts with: docker compose --profile full up
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: services/auth-service/Dockerfile
+    container_name: trading-auth-service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-auth:5432/auth_db
+      SPRING_DATASOURCE_USERNAME: trading
+      SPRING_DATASOURCE_PASSWORD: trading_secret
+      TRADING_JWT_SECRET: ${JWT_SECRET:-dev-secret-key-change-in-production-min-32-chars}
+    depends_on:
+      postgres-auth:
+        condition: service_healthy
+    profiles: ["full"]
+
+  market-service:
+    build:
+      context: .
+      dockerfile: services/market-service/Dockerfile
+    container_name: trading-market-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-market:5432/market_db
+      SPRING_DATASOURCE_USERNAME: trading
+      SPRING_DATASOURCE_PASSWORD: trading_secret
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_DATA_REDIS_HOST: redis
+    depends_on:
+      postgres-market:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    profiles: ["full"]
+
+  order-service:
+    build:
+      context: .
+      dockerfile: services/order-service/Dockerfile
+    container_name: trading-order-service
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-order:5432/order_db
+      SPRING_DATASOURCE_USERNAME: trading
+      SPRING_DATASOURCE_PASSWORD: trading_secret
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      WALLET_SERVICE_URL: http://wallet-service:8085
+      MARKET_SERVICE_URL: http://market-service:8082
+    depends_on:
+      postgres-order:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    profiles: ["full"]
+
+  portfolio-service:
+    build:
+      context: .
+      dockerfile: services/portfolio-service/Dockerfile
+    container_name: trading-portfolio-service
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-portfolio:5432/portfolio_db
+      SPRING_DATASOURCE_USERNAME: trading
+      SPRING_DATASOURCE_PASSWORD: trading_secret
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_DATA_REDIS_HOST: redis
+    depends_on:
+      postgres-portfolio:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    profiles: ["full"]
+
+  wallet-service:
+    build:
+      context: .
+      dockerfile: services/wallet-service/Dockerfile
+    container_name: trading-wallet-service
+    ports:
+      - "8085:8085"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-wallet:5432/wallet_db
+      SPRING_DATASOURCE_USERNAME: trading
+      SPRING_DATASOURCE_PASSWORD: trading_secret
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on:
+      postgres-wallet:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    profiles: ["full"]
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: services/payment-service/Dockerfile
+    container_name: trading-payment-service
+    ports:
+      - "8086:8086"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-payment:5432/payment_db
+      SPRING_DATASOURCE_USERNAME: trading
+      SPRING_DATASOURCE_PASSWORD: trading_secret
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_DATA_REDIS_HOST: redis
+    depends_on:
+      postgres-payment:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    profiles: ["full"]
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: services/notification-service/Dockerfile
+    container_name: trading-notification-service
+    ports:
+      - "8087:8087"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on:
+      kafka:
+        condition: service_healthy
+    profiles: ["full"]
+
+# ───────── VOLUMES ──────────────────────────────────────────────
+
+volumes:
+  postgres_auth_data:
+  postgres_market_data:
+  postgres_order_data:
+  postgres_portfolio_data:
+  postgres_wallet_data:
+  postgres_payment_data:
+  redis_data:
+  redis_insight_data:
+  zookeeper_data:
+  zookeeper_log:
+  kafka_data:

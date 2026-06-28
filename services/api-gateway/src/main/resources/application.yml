@@ -1,0 +1,142 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+
+  # ─── Redis (for rate limiting) ─────────────────────────────────
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          min-idle: 2
+
+  # ─── Cloud Gateway ─────────────────────────────────────────────
+  cloud:
+    gateway:
+      # Global default filters applied to every route
+      default-filters:
+        - name: RequestRateLimiter
+          args:
+            redis-rate-limiter: "#{@defaultRateLimiter}"
+            key-resolver: "#{@userKeyResolver}"
+            deny-empty-key: false
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+        - name: Retry
+          args:
+            retries: 2
+            statuses: BAD_GATEWAY, GATEWAY_TIMEOUT, SERVICE_UNAVAILABLE
+            methods: GET
+            backoff:
+              firstBackoff: 100ms
+              maxBackoff: 500ms
+
+      # Enable global CORS handling at gateway level
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+
+      httpclient:
+        connect-timeout: 5000
+        response-timeout: 30s
+
+      # Timeout per route
+      routes: []   # Routes defined programmatically in GatewayRoutesConfig.java
+
+  # ─── WebSocket support ─────────────────────────────────────────
+  websocket:
+    enabled: true
+
+# ─── Service URLs ─────────────────────────────────────────────────
+# Override in Docker / K8s via environment variables
+services:
+  auth-service:
+    url: ${AUTH_SERVICE_URL:http://localhost:8081}
+  market-service:
+    url: ${MARKET_SERVICE_URL:http://localhost:8082}
+  order-service:
+    url: ${ORDER_SERVICE_URL:http://localhost:8083}
+  portfolio-service:
+    url: ${PORTFOLIO_SERVICE_URL:http://localhost:8084}
+  wallet-service:
+    url: ${WALLET_SERVICE_URL:http://localhost:8085}
+  payment-service:
+    url: ${PAYMENT_SERVICE_URL:http://localhost:8086}
+  notification-service:
+    url: ${NOTIFICATION_SERVICE_URL:http://localhost:8087}
+
+# ─── JWT (same secret as auth-service) ───────────────────────────
+trading:
+  jwt:
+    secret: ${TRADING_JWT_SECRET:dGhpcy1pcy1hLWRldi1vbmx5LXNlY3JldC1rZXktcGxlYXNlLWNoYW5nZS1pbi1wcm9kdWN0aW9u}
+
+# ─── OpenAPI / Swagger Aggregation ───────────────────────────────
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: auth-service
+        url: /docs/auth/v3/api-docs
+      - name: market-service
+        url: /docs/market/v3/api-docs
+      - name: order-service
+        url: /docs/order/v3/api-docs
+      - name: portfolio-service
+        url: /docs/portfolio/v3/api-docs
+      - name: wallet-service
+        url: /docs/wallet/v3/api-docs
+      - name: payment-service
+        url: /docs/payment/v3/api-docs
+    display-request-duration: true
+    groups-order: ASC
+    operationsSorter: method
+    disable-swagger-default-url: true
+    use-root-path: true
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  # Disable SpringDoc's own endpoints (gateway just aggregates)
+  show-actuator: false
+
+# ─── Actuator ─────────────────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, gateway, metrics
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      enabled: true
+
+# ─── Logging ──────────────────────────────────────────────────────
+logging:
+  level:
+    com.trading: DEBUG
+    org.springframework.cloud.gateway: INFO
+    reactor.netty: WARN
+
+---
+# Docker profile — service URLs use Docker Compose service names
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+services:
+  auth-service.url: http://auth-service:8081
+  market-service.url: http://market-service:8082
+  order-service.url: http://order-service:8083
+  portfolio-service.url: http://portfolio-service:8084
+  wallet-service.url: http://wallet-service:8085
+  payment-service.url: http://payment-service:8086
+  notification-service.url: http://notification-service:8087

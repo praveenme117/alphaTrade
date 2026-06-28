@@ -1,0 +1,144 @@
+name: PR Check
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  detect-changes:
+    name: Detect Changed Services
+    runs-on: ubuntu-latest
+    outputs:
+      shared: ${{ steps.filter.outputs.shared }}
+      auth-service: ${{ steps.filter.outputs.auth-service }}
+      market-service: ${{ steps.filter.outputs.market-service }}
+      order-service: ${{ steps.filter.outputs.order-service }}
+      portfolio-service: ${{ steps.filter.outputs.portfolio-service }}
+      wallet-service: ${{ steps.filter.outputs.wallet-service }}
+      payment-service: ${{ steps.filter.outputs.payment-service }}
+      notification-service: ${{ steps.filter.outputs.notification-service }}
+      api-gateway: ${{ steps.filter.outputs.api-gateway }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            shared:
+              - 'shared/**'
+              - 'pom.xml'
+            auth-service:
+              - 'services/auth-service/**'
+              - 'shared/**'
+            market-service:
+              - 'services/market-service/**'
+              - 'shared/**'
+            order-service:
+              - 'services/order-service/**'
+              - 'shared/**'
+            portfolio-service:
+              - 'services/portfolio-service/**'
+              - 'shared/**'
+            wallet-service:
+              - 'services/wallet-service/**'
+              - 'shared/**'
+            payment-service:
+              - 'services/payment-service/**'
+              - 'shared/**'
+            notification-service:
+              - 'services/notification-service/**'
+              - 'shared/**'
+            api-gateway:
+              - 'services/api-gateway/**'
+              - 'shared/**'
+
+  test-auth-service:
+    name: Test auth-service
+    needs: detect-changes
+    if: needs.detect-changes.outputs.auth-service == 'true'
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: auth_db_test
+          POSTGRES_USER: trading
+          POSTGRES_PASSWORD: trading_secret
+        ports: ["5433:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+      - name: Run unit tests — auth-service
+        run: mvn test -pl services/auth-service -am -B --no-transfer-progress
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: auth-service-test-results
+          path: services/auth-service/target/surefire-reports/
+
+  test-market-service:
+    name: Test market-service
+    needs: detect-changes
+    if: needs.detect-changes.outputs.market-service == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { java-version: '21', distribution: 'temurin', cache: maven }
+      - run: mvn test -pl services/market-service -am -B --no-transfer-progress
+
+  test-order-service:
+    name: Test order-service
+    needs: detect-changes
+    if: needs.detect-changes.outputs.order-service == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { java-version: '21', distribution: 'temurin', cache: maven }
+      - run: mvn test -pl services/order-service -am -B --no-transfer-progress
+
+  test-wallet-service:
+    name: Test wallet-service
+    needs: detect-changes
+    if: needs.detect-changes.outputs.wallet-service == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { java-version: '21', distribution: 'temurin', cache: maven }
+      - run: mvn test -pl services/wallet-service -am -B --no-transfer-progress
+
+  test-payment-service:
+    name: Test payment-service
+    needs: detect-changes
+    if: needs.detect-changes.outputs.payment-service == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { java-version: '21', distribution: 'temurin', cache: maven }
+      - run: mvn test -pl services/payment-service -am -B --no-transfer-progress
+
+  build-check:
+    name: Full Build Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+      - name: Compile all modules
+        run: mvn compile -B --no-transfer-progress
