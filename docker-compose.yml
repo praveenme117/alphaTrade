@@ -247,7 +247,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-auth:5432/auth_db
       SPRING_DATASOURCE_USERNAME: trading
       SPRING_DATASOURCE_PASSWORD: trading_secret
-      TRADING_JWT_SECRET: ${JWT_SECRET:-dev-secret-key-change-in-production-min-32-chars}
+      TRADING_JWT_SECRET: ${JWT_SECRET:-dGhpcy1pcy1hLWRldi1vbmx5LXNlY3JldC1rZXktcGxlYXNlLWNoYW5nZS1pbi1wcm9kdWN0aW9u}
     depends_on:
       postgres-auth:
         condition: service_healthy
