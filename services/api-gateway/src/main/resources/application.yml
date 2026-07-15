@@ -72,6 +72,8 @@ services:
     url: ${PAYMENT_SERVICE_URL:http://localhost:8086}
   notification-service:
     url: ${NOTIFICATION_SERVICE_URL:http://localhost:8087}
+  ai-assistant-service:
+    url: ${AI_ASSISTANT_SERVICE_URL:http://localhost:8088}
 
 # ─── JWT (same secret as auth-service) ───────────────────────────
 trading:
@@ -95,6 +97,8 @@ springdoc:
         url: /docs/wallet/v3/api-docs
       - name: payment-service
         url: /docs/payment/v3/api-docs
+      - name: ai-assistant-service
+        url: /docs/assistant/v3/api-docs
     display-request-duration: true
     groups-order: ASC
     operationsSorter: method
@@ -140,3 +144,4 @@ services:
   wallet-service.url: http://wallet-service:8085
   payment-service.url: http://payment-service:8086
   notification-service.url: http://notification-service:8087
+  ai-assistant-service.url: http://ai-assistant-service:8088

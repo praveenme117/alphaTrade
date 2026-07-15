@@ -1,0 +1,36 @@
+server:
+  port: 8088
+spring:
+  application:
+    name: ai-assistant-service
+assistant:
+  groq:
+    base-url: ${GROQ_BASE_URL:https://api.groq.com/openai/v1}
+    api-key: ${GROQ_API_KEY:}
+    model: ${GROQ_MODEL:llama-3.3-70b-versatile}
+    temperature: 0.3
+    max-tokens: 1024
+  qdrant:
+    url: ${QDRANT_URL:}
+    api-key: ${QDRANT_API_KEY:}
+    collection: ${QDRANT_COLLECTION:alphatrade_knowledge}
+    # Embeddings are computed server-side by Qdrant Cloud Inference (Groq has no embeddings API)
+    embedding-model: ${QDRANT_EMBEDDING_MODEL:sentence-transformers/all-minilm-l6-v2}
+    vector-size: 384
+  rag:
+    top-k: 4
+    min-score: 0.30
+    ingest-on-startup: ${ASSISTANT_INGEST_ON_STARTUP:true}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+logging:
+  level:
+    com.trading: DEBUG

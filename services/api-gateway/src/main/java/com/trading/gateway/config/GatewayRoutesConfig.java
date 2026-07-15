@@ -47,6 +47,9 @@ public class GatewayRoutesConfig {
     @Value("${services.notification-service.url}")
     private String notificationServiceUrl;
 
+    @Value("${services.ai-assistant-service.url}")
+    private String aiAssistantServiceUrl;
+
     public GatewayRoutesConfig(JwtAuthFilter jwtAuthFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
     }
@@ -112,6 +115,12 @@ public class GatewayRoutesConfig {
                 .path("/api/v1/payments/webhook/**")
                 .uri(paymentServiceUrl))
 
+            // ─── AI ASSISTANT SERVICE ────────────────────────────────────
+            .route("ai-assistant-service", r -> r
+                .path("/api/v1/assistant/**")
+                .filters(f -> f.filter(jwtAuthFilter.apply(jwtConfig)))
+                .uri(aiAssistantServiceUrl))
+
             // ─── WEBSOCKET — market live prices ─────────────────────────
             .route("websocket", r -> r
                 .path("/ws/**")
@@ -142,6 +151,10 @@ public class GatewayRoutesConfig {
                 .path("/docs/payment/v3/api-docs")
                 .filters(f -> f.rewritePath("/docs/payment/v3/api-docs", "/v3/api-docs"))
                 .uri(paymentServiceUrl))
+            .route("docs-assistant", r -> r
+                .path("/docs/assistant/v3/api-docs")
+                .filters(f -> f.rewritePath("/docs/assistant/v3/api-docs", "/v3/api-docs"))
+                .uri(aiAssistantServiceUrl))
 
             .build();
     }
@@ -160,6 +173,7 @@ public class GatewayRoutesConfig {
         urls.add(swaggerUrl("portfolio-service", "/docs/portfolio/v3/api-docs"));
         urls.add(swaggerUrl("wallet-service",    "/docs/wallet/v3/api-docs"));
         urls.add(swaggerUrl("payment-service",   "/docs/payment/v3/api-docs"));
+        urls.add(swaggerUrl("ai-assistant-service", "/docs/assistant/v3/api-docs"));
         return urls;
     }
 

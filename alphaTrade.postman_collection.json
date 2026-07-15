@@ -8,21 +8,69 @@
   "auth": {
     "type": "bearer",
     "bearer": [
-      { "key": "token", "value": "{{accessToken}}", "type": "string" }
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
     ]
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:8080/api/v1", "type": "string" },
-    { "key": "accessToken", "value": "", "type": "string" },
-    { "key": "refreshToken", "value": "", "type": "string" },
-    { "key": "userEmail", "value": "test.user@example.com", "type": "string" },
-    { "key": "userPassword", "value": "Password123!", "type": "string" },
-    { "key": "instrumentId", "value": "", "type": "string" },
-    { "key": "symbol", "value": "AAPL", "type": "string" },
-    { "key": "orderId", "value": "", "type": "string" },
-    { "key": "currency", "value": "INR", "type": "string" },
-    { "key": "paymentId", "value": "", "type": "string" },
-    { "key": "notificationId", "value": "", "type": "string" }
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userEmail",
+      "value": "test.user@example.com",
+      "type": "string"
+    },
+    {
+      "key": "userPassword",
+      "value": "Password123!",
+      "type": "string"
+    },
+    {
+      "key": "instrumentId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "symbol",
+      "value": "AAPL",
+      "type": "string"
+    },
+    {
+      "key": "orderId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "currency",
+      "value": "INR",
+      "type": "string"
+    },
+    {
+      "key": "paymentId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "notificationId",
+      "value": "",
+      "type": "string"
+    }
   ],
   "item": [
     {
@@ -32,15 +80,25 @@
           "name": "Register",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"fullName\": \"Test User\",\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"{{userPassword}}\",\n  \"phone\": \"9999999999\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/register",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "auth", "register" ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
             },
             "description": "Public. Registers a new user and returns access + refresh tokens."
           },
@@ -65,15 +123,25 @@
           "name": "Login",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"{{userPassword}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/login",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "auth", "login" ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
             },
             "description": "Public. Logs in and returns access + refresh tokens."
           },
@@ -98,15 +166,25 @@
           "name": "Refresh Token",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/refresh",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "auth", "refresh" ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
             },
             "description": "Public. Rotates access/refresh tokens."
           },
@@ -134,8 +212,13 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/auth/me",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "auth", "me" ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
             },
             "description": "Protected. Returns the authenticated user's profile."
           }
@@ -147,8 +230,13 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/auth/logout",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "auth", "logout" ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
             },
             "description": "Protected. Revokes all refresh tokens for the current user."
           }
@@ -164,9 +252,21 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/market/instruments?type=STOCK",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "market", "instruments" ],
-              "query": [ { "key": "type", "value": "STOCK", "description": "Optional: STOCK | CRYPTO | ETF", "disabled": true } ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "market",
+                "instruments"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "STOCK",
+                  "description": "Optional: STOCK | CRYPTO | ETF",
+                  "disabled": true
+                }
+              ]
             },
             "description": "Protected. Lists instruments, optionally filtered by type."
           }
@@ -177,8 +277,14 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/market/instruments/{{instrumentId}}",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "market", "instruments", "{{instrumentId}}" ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "market",
+                "instruments",
+                "{{instrumentId}}"
+              ]
             },
             "description": "Protected. Fetch a single instrument by UUID."
           }
@@ -189,8 +295,15 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/market/instruments/symbol/{{symbol}}",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "market", "instruments", "symbol", "{{symbol}}" ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "market",
+                "instruments",
+                "symbol",
+                "{{symbol}}"
+              ]
             },
             "description": "Protected. Fetch a single instrument by symbol."
           }
@@ -201,9 +314,20 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/market/instruments/search?q=AAPL",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "market", "instruments", "search" ],
-              "query": [ { "key": "q", "value": "AAPL" } ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "market",
+                "instruments",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "AAPL"
+                }
+              ]
             },
             "description": "Protected. Search instruments by partial symbol/name."
           }
@@ -214,8 +338,14 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/market/quotes/{{symbol}}",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "market", "quotes", "{{symbol}}" ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "market",
+                "quotes",
+                "{{symbol}}"
+              ]
             },
             "description": "Protected. Live quote for a single symbol."
           }
@@ -226,9 +356,19 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/market/quotes?symbols=AAPL,TSLA",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "market", "quotes" ],
-              "query": [ { "key": "symbols", "value": "AAPL,TSLA" } ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "market",
+                "quotes"
+              ],
+              "query": [
+                {
+                  "key": "symbols",
+                  "value": "AAPL,TSLA"
+                }
+              ]
             },
             "description": "Protected. Live quotes for multiple symbols."
           }
@@ -242,15 +382,24 @@
           "name": "Place Order",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"instrumentId\": \"{{instrumentId}}\",\n  \"symbol\": \"{{symbol}}\",\n  \"orderType\": \"MARKET\",\n  \"side\": \"BUY\",\n  \"productType\": \"DELIVERY\",\n  \"quantity\": 1,\n  \"price\": null,\n  \"stopPrice\": null\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/orders",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "orders" ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
             },
             "description": "Protected. orderType: MARKET|LIMIT|STOP_LOSS. side: BUY|SELL. productType: CASH|INTRADAY|DELIVERY. Locks funds via wallet-service then fills asynchronously."
           },
@@ -276,9 +425,22 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/orders?page=0&size=20",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "orders" ],
-              "query": [ { "key": "page", "value": "0" }, { "key": "size", "value": "20" } ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
             },
             "description": "Protected. Paginated order history."
           }
@@ -289,8 +451,13 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/orders/{{orderId}}",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "orders", "{{orderId}}" ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "{{orderId}}"
+              ]
             },
             "description": "Protected. Fetch a single order."
           }
@@ -301,8 +468,13 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/orders/open",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "orders", "open" ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "open"
+              ]
             },
             "description": "Protected. Lists only open (unfilled/unfilled-partial) orders."
           }
@@ -313,8 +485,13 @@
             "method": "DELETE",
             "url": {
               "raw": "{{baseUrl}}/orders/{{orderId}}",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "orders", "{{orderId}}" ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "{{orderId}}"
+              ]
             },
             "description": "Protected. Cancels the order and unlocks the reserved funds."
           }
@@ -330,8 +507,13 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/portfolio/holdings",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "portfolio", "holdings" ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "portfolio",
+                "holdings"
+              ]
             },
             "description": "Protected. All holdings with quantity > 0."
           }
@@ -342,8 +524,14 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/portfolio/holdings/{{instrumentId}}",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "portfolio", "holdings", "{{instrumentId}}" ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "portfolio",
+                "holdings",
+                "{{instrumentId}}"
+              ]
             },
             "description": "Protected. Single holding for an instrument."
           }
@@ -354,8 +542,13 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/portfolio/summary",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "portfolio", "summary" ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "portfolio",
+                "summary"
+              ]
             },
             "description": "Protected. Returns holdingsCount, totalInvested, totalRealizedPnl."
           }
@@ -371,8 +564,12 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/wallet",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "wallet" ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "wallet"
+              ]
             },
             "description": "Protected. All wallet balances for the current user."
           }
@@ -383,8 +580,13 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/wallet/{{currency}}",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "wallet", "{{currency}}" ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "wallet",
+                "{{currency}}"
+              ]
             },
             "description": "Protected. Balance for a single currency, e.g. INR."
           }
@@ -395,9 +597,23 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/wallet/ledger?page=0&size=50",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "wallet", "ledger" ],
-              "query": [ { "key": "page", "value": "0" }, { "key": "size", "value": "50" } ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "wallet",
+                "ledger"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "50"
+                }
+              ]
             },
             "description": "Protected. Paginated transaction ledger (default size 50)."
           }
@@ -406,15 +622,25 @@
           "name": "[Internal] Lock Funds",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"userId\": \"\",\n  \"currency\": \"{{currency}}\",\n  \"amount\": 100.0,\n  \"orderId\": \"{{orderId}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/wallet/lock",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "wallet", "lock" ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "wallet",
+                "lock"
+              ]
             },
             "description": "INTERNAL service-to-service endpoint normally called by order-service via Feign, not routed for end users through the gateway. Included for completeness; may return 404/403 when called directly with a normal user JWT."
           }
@@ -423,15 +649,25 @@
           "name": "[Internal] Unlock Funds",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"userId\": \"\",\n  \"currency\": \"{{currency}}\",\n  \"amount\": 100.0,\n  \"orderId\": \"{{orderId}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/wallet/unlock",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "wallet", "unlock" ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "wallet",
+                "unlock"
+              ]
             },
             "description": "INTERNAL service-to-service endpoint normally called by order-service via Feign when an order is cancelled. Included for completeness; may return 404/403 when called directly with a normal user JWT."
           }
@@ -445,15 +681,25 @@
           "name": "Deposit",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"amount\": 10000,\n  \"currency\": \"{{currency}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/payments/deposit",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "payments", "deposit" ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "deposit"
+              ]
             },
             "description": "Protected. Mock deposit, always succeeds; publishes PaymentCompletedEvent which credits the wallet asynchronously."
           },
@@ -477,15 +723,25 @@
           "name": "Withdraw",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"amount\": 500,\n  \"currency\": \"{{currency}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/payments/withdraw",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "payments", "withdraw" ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "withdraw"
+              ]
             },
             "description": "Protected. Mock withdrawal."
           }
@@ -496,9 +752,23 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/payments/history?page=0&size=20",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "payments", "history" ],
-              "query": [ { "key": "page", "value": "0" }, { "key": "size", "value": "20" } ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "history"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
             },
             "description": "Protected. Paginated payment history."
           }
@@ -509,8 +779,13 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/payments/{{paymentId}}",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "payments", "{{paymentId}}" ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "{{paymentId}}"
+              ]
             },
             "description": "Protected. Fetch a single payment."
           }
@@ -520,8 +795,15 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "text/plain" },
-              { "key": "X-Signature", "value": "test-signature", "disabled": true }
+              {
+                "key": "Content-Type",
+                "value": "text/plain"
+              },
+              {
+                "key": "X-Signature",
+                "value": "test-signature",
+                "disabled": true
+              }
             ],
             "body": {
               "mode": "raw",
@@ -529,8 +811,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/payments/webhook/mock",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "payments", "webhook", "mock" ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "webhook",
+                "mock"
+              ]
             },
             "description": "Public, no JWT required. Mock payment gateway webhook stub; logs only. Replace 'mock' path segment with the gateway name if different."
           }
@@ -546,9 +834,22 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/notifications?page=0&size=20",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "notifications" ],
-              "query": [ { "key": "page", "value": "0" }, { "key": "size", "value": "20" } ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notifications"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
             },
             "description": "Protected. Paginated notifications for the current user."
           }
@@ -559,8 +860,13 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/notifications/unread-count",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "notifications", "unread-count" ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notifications",
+                "unread-count"
+              ]
             },
             "description": "Protected. Unread notification count."
           }
@@ -571,8 +877,14 @@
             "method": "PATCH",
             "url": {
               "raw": "{{baseUrl}}/notifications/{{notificationId}}/read",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "notifications", "{{notificationId}}", "read" ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notifications",
+                "{{notificationId}}",
+                "read"
+              ]
             },
             "description": "Protected. Marks a single notification as read."
           }
@@ -583,10 +895,64 @@
             "method": "PATCH",
             "url": {
               "raw": "{{baseUrl}}/notifications/read-all",
-              "host": [ "{{baseUrl}}" ],
-              "path": [ "notifications", "read-all" ]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notifications",
+                "read-all"
+              ]
             },
             "description": "Protected. Marks all notifications as read."
+          }
+        }
+      ]
+    },
+    {
+      "name": "AI Assistant Service",
+      "item": [
+        {
+          "name": "Chat with Assistant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"How do I place a limit order?\",\n  \"history\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/assistant/chat",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "assistant",
+                "chat"
+              ]
+            },
+            "description": "Protected. RAG chat \u2014 retrieves platform docs from Qdrant and answers via Groq LLM. Pass prior turns back in `history` (roles: user/assistant); the service is stateless."
+          }
+        },
+        {
+          "name": "Reindex Knowledge Base",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/assistant/reindex",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "assistant",
+                "reindex"
+              ]
+            },
+            "description": "Protected. Re-ingests the bundled markdown knowledge base into the Qdrant collection. Returns the chunk count."
           }
         }
       ]
@@ -600,8 +966,13 @@
             "method": "GET",
             "url": {
               "raw": "http://localhost:8080/actuator/health",
-              "host": [ "http://localhost:8080" ],
-              "path": [ "actuator", "health" ]
+              "host": [
+                "http://localhost:8080"
+              ],
+              "path": [
+                "actuator",
+                "health"
+              ]
             },
             "description": "Public. Actuator health check for the API Gateway."
           }
@@ -612,8 +983,12 @@
             "method": "GET",
             "url": {
               "raw": "http://localhost:8080/swagger-ui.html",
-              "host": [ "http://localhost:8080" ],
-              "path": [ "swagger-ui.html" ]
+              "host": [
+                "http://localhost:8080"
+              ],
+              "path": [
+                "swagger-ui.html"
+              ]
             },
             "description": "Public. Combined Swagger UI across all services. Best opened in a browser rather than sent as a Postman request."
           }

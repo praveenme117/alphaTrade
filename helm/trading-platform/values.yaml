@@ -38,10 +38,21 @@ services:
     enabled: true
     port: 8087
     replicas: 1
+  aiAssistantService:
+    enabled: true
+    port: 8088
+    replicas: 1
 
 # ─── JWT config ───────────────────────────────────────────────
 jwt:
   secret: "change-me-in-production-32-chars-min"
+
+# ─── AI Assistant (Groq + Qdrant Cloud) ───────────────────────
+assistant:
+  groqApiKey: ""        # Override with secret in production
+  groqModel: "llama-3.3-70b-versatile"
+  qdrantUrl: ""
+  qdrantApiKey: ""      # Override with secret in production
 
 # ─── Infrastructure refs ──────────────────────────────────────
 kafka:

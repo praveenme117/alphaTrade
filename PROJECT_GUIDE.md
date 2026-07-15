@@ -25,6 +25,7 @@ A trading-platform built as **Java 21 / Spring Boot 3.4.4 microservices** behind
   (postgres)        (postgres)    (postgres)      (postgres)      (postgres)      (postgres)
 
                 notification-service :8087 ── notification_db (postgres)
+                ai-assistant-service :8088 ── Groq LLM + Qdrant Cloud (no DB, stateless)
 
   Kafka (topics: market.price.updates, order.filled, payment.completed)
   Redis (price cache + gateway rate limiting)
@@ -48,6 +49,7 @@ All backend services are Maven modules under `services/<name>/`, Java 21, Spring
 | **wallet-service** | 8085 | `wallet_db` | Balances per currency, fund lock/unlock, ledger | Kafka consumer, internal lock/unlock API for order-service |
 | **payment-service** | 8086 | `payment_db` | Mock deposits/withdrawals, payment history, gateway webhook | Kafka producer, mock gateway (`MOCK`) |
 | **notification-service** | 8087 | `notification_db` | User notifications (order filled, payment completed) | Kafka consumer |
+| **ai-assistant-service** | 8088 | — (stateless) | AI chatbot ("Alpha") answering platform questions via RAG | Groq LLM (chat), Qdrant Cloud (vector search + server-side embeddings) |
 
 ### What each service does, in detail
 
@@ -64,6 +66,8 @@ All backend services are Maven modules under `services/<name>/`, Java 21, Spring
 **payment-service** — mock payment gateway. Deposits/withdrawals always succeed (no real payment provider is wired in — Stripe/Razorpay keys in `.env.example` are placeholders, unused). On success it publishes `PaymentCompletedEvent` to Kafka so wallet-service can credit the balance and notification-service can notify the user. Also exposes a public webhook endpoint stub.
 
 **notification-service** — pure Kafka consumer of `OrderFilledEvent` and `PaymentCompletedEvent`; creates in-app notifications, exposes read/unread-count/mark-read APIs for the frontend bell icon.
+
+**ai-assistant-service** — the platform chatbot, surfaced in the frontend as a floating chat widget on every authenticated page. It is a Retrieval-Augmented Generation (RAG) service: a markdown knowledge base bundled in `src/main/resources/knowledge/` is chunked and stored in a **Qdrant Cloud** collection (`alphatrade_knowledge`); embeddings are computed server-side by Qdrant Cloud Inference (`all-minilm-l6-v2`), so no embedding model runs locally. Each chat request retrieves the most relevant doc sections and generates an answer with a **Groq**-hosted LLM (default `llama-3.3-70b-versatile`). The service has no database and no Kafka — conversation history is kept client-side and sent with each request. Knowledge is (re-)ingested automatically on startup (idempotent) or manually via `POST /assistant/reindex`. Requires `GROQ_API_KEY`, `QDRANT_CLUSTER_ENDPOINT` and `QDRANT_API_KEY` in the root `.env`; without them the service still starts but chat returns 503.
 
 **api-gateway** — the only service exposed to the outside world in a real deployment. It:
 - Validates JWTs (`JwtAuthFilter`) using the same `JWT_SECRET` as auth-service, and on success strips the `Authorization` header and injects trusted `X-User-Id`, `X-User-Role`, `X-User-Email` headers before forwarding downstream (downstream services trust these headers as-is — they do not re-validate the JWT).
@@ -84,14 +88,17 @@ All backend services are Maven modules under `services/<name>/`, Java 21, Spring
 ### Option A — Full stack with Docker (recommended)
 
 ```bash
-# 1. Build all backend JARs first (Docker images copy pre-built jars, no in-container Maven build)
+# 1. Copy .env.example to .env and fill in GROQ_API_KEY / QDRANT_* (needed by the AI assistant)
+cp .env.example .env
+
+# 2. Build all backend JARs first (Docker images copy pre-built jars, no in-container Maven build)
 mvn clean package -DskipTests
 
-# 2. Start infra + all 8 microservices
+# 3. Start infra + all 9 microservices
 docker compose --profile full up -d --build
 ```
 
-This starts 20 containers: 7 Postgres instances (one per service), Redis, Zookeeper, Kafka, Kafka UI, Redis Insight, and the 8 Spring Boot services.
+This starts 21 containers: 7 Postgres instances (one per service), Redis, Zookeeper, Kafka, Kafka UI, Redis Insight, and the 9 Spring Boot services.
 
 > **Gotcha:** `docker compose up -d` (no `--profile full`) only starts the infrastructure (databases, Kafka, Redis) — the microservices are gated behind the `full` profile and will NOT start without it.
 
@@ -162,6 +169,7 @@ Other scripts: `npm run build` (`tsc -b && vite build`), `npm run preview`, `npm
 | `PortfolioPage` | `GET /portfolio/holdings`, `GET /portfolio/summary` |
 | `WalletPage` | `GET /wallet`, `GET /wallet/{currency}`, `GET /wallet/ledger`, `POST /payments/deposit`, `POST /payments/withdraw` |
 | `NotificationsPage` | `GET /notifications`, `PATCH /notifications/{id}/read`, `PATCH /notifications/read-all` |
+| `AssistantWidget` (floating chat, all pages) | `POST /assistant/chat` |
 
 ---
 
@@ -242,7 +250,16 @@ All responses are wrapped: `{ "success": bool, "message": string, "data": <paylo
 | PATCH | `/notifications/{id}/read` | Protected | mark one as read |
 | PATCH | `/notifications/read-all` | Protected | mark all as read |
 
-### 5.8 Suggested Postman Testing Flow
+### 5.8 AI Assistant Service — `/api/v1/assistant`
+
+| Method | Path | Auth | Body | Notes |
+|---|---|---|---|---|
+| POST | `/assistant/chat` | Protected | `{ "message": "How do I place a limit order?", "history": [{ "role": "user\|assistant", "content": "..." }] }` | RAG answer; returns `{ reply, model, sources[] }`. `history` is optional (service is stateless — pass prior turns back each call) |
+| POST | `/assistant/reindex` | Protected | — | re-ingests the bundled knowledge base into Qdrant, returns chunk count |
+
+> Requires `GROQ_API_KEY` + `QDRANT_CLUSTER_ENDPOINT` + `QDRANT_API_KEY` in the root `.env`. Without them, chat returns 503 `ASSISTANT_UNAVAILABLE`. If only Qdrant is missing, the bot still answers, just without doc retrieval.
+
+### 5.9 Suggested Postman Testing Flow
 
 1. `POST /auth/register` → grab `accessToken`/`refreshToken`, or `POST /auth/login` if the user already exists.
 2. Set `accessToken` as a Postman collection variable, use `Bearer {{accessToken}}` as the collection-level auth.
@@ -299,6 +316,10 @@ KAFKA_SERVERS=localhost:9092
 REDIS_HOST=localhost
 REDIS_PORT=6379
 SPRING_PROFILES_ACTIVE=dev
+GROQ_API_KEY=<Groq API key — console.groq.com, used by ai-assistant-service>
+GROQ_MODEL=llama-3.3-70b-versatile
+QDRANT_CLUSTER_ENDPOINT=<Qdrant Cloud cluster URL — cloud.qdrant.io>
+QDRANT_API_KEY=<Qdrant Cloud API key>
 # STRIPE_API_KEY / RAZORPAY_KEY_ID etc. — placeholders, unused (payment gateway is mocked)
 # SENDGRID_API_KEY — placeholder, unused (notifications are in-app only)
 ```
@@ -312,6 +333,8 @@ SPRING_PROFILES_ACTIVE=dev
 - order-service only: `WALLET_SERVICE_URL`, `MARKET_SERVICE_URL` (Feign target)
 - market-service only: `PRICE_FEED_ENABLED` (default `true`)
 - payment-service only: `PAYMENT_GATEWAY` (default `MOCK`)
+- ai-assistant-service only: `GROQ_API_KEY`, `GROQ_MODEL`, `QDRANT_URL` (compose maps it from `QDRANT_CLUSTER_ENDPOINT`), `QDRANT_API_KEY`, `QDRANT_COLLECTION` (default `alphatrade_knowledge`), `ASSISTANT_INGEST_ON_STARTUP` (default `true`)
+- api-gateway also: `AI_ASSISTANT_SERVICE_URL`
 
 **Frontend `services/frontend/.env.example`:**
 ```

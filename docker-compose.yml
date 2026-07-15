@@ -230,6 +230,7 @@ services:
       PORTFOLIO_SERVICE_URL: http://portfolio-service:8084
       WALLET_SERVICE_URL: http://wallet-service:8085
       PAYMENT_SERVICE_URL: http://payment-service:8086
+      AI_ASSISTANT_SERVICE_URL: http://ai-assistant-service:8088
     depends_on:
       redis:
         condition: service_healthy
@@ -380,6 +381,21 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+    profiles: ["full"]
+
+  ai-assistant-service:
+    build:
+      context: .
+      dockerfile: services/ai-assistant-service/Dockerfile
+    container_name: trading-ai-assistant-service
+    ports:
+      - "8088:8088"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_MODEL: ${GROQ_MODEL:-llama-3.3-70b-versatile}
+      QDRANT_URL: ${QDRANT_CLUSTER_ENDPOINT:-}
+      QDRANT_API_KEY: ${QDRANT_API_KEY:-}
     profiles: ["full"]
 
 # ───────── VOLUMES ──────────────────────────────────────────────
